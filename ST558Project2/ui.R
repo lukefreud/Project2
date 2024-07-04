@@ -17,6 +17,7 @@ shinyUI(fluidPage(
       br(),
       h4("You can select a dataset using the buttons below."),
       radioButtons("plot", "Select the Plot Type", choices = list("Just Classification" = "bar", "Classification and Unemployed" = "sideUmemploy", "Classification and Foreign" = "sideForeign"), selected = "bar"),
+      checkboxGroupInput("GRFilter", "Filter By Date", choices = c("2012","2013"), selected = c("2012", "2013")),
       br(),
       h4("You can find the", strong("sample mean"), " for a few variables below:"),
       selectInput("var", label = "Dataset to choose", 
