@@ -16,6 +16,9 @@ shinyServer(function(input, output) {
       final_data <- as_tibble(parsed_data$data)
       final_data <- final_data |>
         select(record_date, facility_desc, form_desc, location_desc, fine_troy_ounce_qty, book_value_amt, record_calendar_year)
+        if(input$GRFilter == "both") {
+          final_data <- final_data
+        }
         if(input$GRFilter == "2012") {
           final_data <- final_data |>
             filter(record_calendar_year == "2012")
@@ -32,6 +35,21 @@ shinyServer(function(input, output) {
       final_data <- as_tibble(parsed_data$data)
       final_data <- final_data |>
         select(record_date, restmt_flag, account_desc, line_item_desc, position_bil_amt, record_calendar_year)
+      if(input$BSFilter == "all") {
+        final_data <- final_data
+      }
+      if(input$BSFilter == "1995") {
+        final_data <- final_data |>
+          filter(record_calendar_year == "1995")
+      }
+      if (input$BSFilter == "1996") {
+        final_data <- final_data |>
+          filter(record_calendar_year == "1996")
+      }
+      if (input$BSFilter == "1997") {
+        final_data <- final_data |>
+          filter(record_calendar_year == "1997")
+      }
       return(final_data)
     } else if (input$var == "Interest Rates") {
       url <- "https://api.fiscaldata.treasury.gov/services/api/fiscal_service/v2/accounting/od/avg_interest_rates"
@@ -48,6 +66,17 @@ shinyServer(function(input, output) {
       final_data <- as_tibble(parsed_data$data)
       final_data <- final_data |>
         select(record_date, security_type_desc, security_class_desc, securities_redeemed_cnt, securities_redeemed_amt, record_calendar_year)
+      if(input$ESFilter == "both") {
+        final_data <- final_data
+      }
+      if(input$ESFilter == "2002") {
+        final_data <- final_data |>
+          filter(record_calendar_year == "2002")
+      }
+      if (input$ESFilter == "2003") {
+        final_data <- final_data |>
+          filter(record_calendar_year == "2003")
+      }
       return(final_data)
     } else if (input$var == "Public Debt") {
       url <- "https://api.fiscaldata.treasury.gov/services/api/fiscal_service/v1/debt/mspd/mspd_table_1"
