@@ -31,13 +31,31 @@ shinyUI(fluidPage(
     
       conditionalPanel(
         "input.var == 'Balance Sheets'",
-        radioButtons("BSFilter", "Filter By Date", choices = c("1995", "1996", "1997", "all"), selected = "all")),
+        radioButtons("BSFilter", "Filter By Date", choices = c("1995", "1996", "1997", "all"), selected = "all"),
+        checkboxGroupInput("BSColumns", "Select desired columns", choices = 
+                             c("record_date", "restmt_flag", "account_desc", "line_item_desc", "position_bil_amt", "record_calendar_year"),
+                           selected = c("record_date", "restmt_flag", "account_desc", "line_item_desc", "position_bil_amt", "record_calendar_year"))),
+      conditionalPanel(
+        "input.var == 'Interest Rates'",
+        checkboxGroupInput("IRColumns", "Select desired columns", choices =
+                             c("record_date", "security_type_desc", "security_desc", "avg_interest_rate_amt", "record_calendar_year"),
+                           selected = c("record_date", "security_type_desc", "security_desc", "avg_interest_rate_amt", "record_calendar_year"))),
       conditionalPanel(
         "input.var == 'Electronic Securities'",
         radioButtons("ESFilter", "Filter By Date", choices = c("2002", "2003", "both"), selected = "both"),
         checkboxGroupInput("ESColumns", "Select desired columns", choices = 
                              c("record_date", "security_type_desc", "security_class_desc", "securities_redeemed_cnt", "securities_redeemed_amt", "record_calendar_year"), 
                            selected = c("record_date", "security_type_desc", "security_class_desc", "securities_redeemed_cnt", "securities_redeemed_amt", "record_calendar_year"))),
+    conditionalPanel(
+      "input.var == 'Public Debt'",
+      checkboxGroupInput("PDColumns", "Select desired columns", choices =
+                           c("record_date", "security_type_desc", "security_class_desc", "debt_held_public_mil_amt", "intragov_hold_mil_amt", "total_mil_amt", "record_calendar_year"),
+                         selected = c("record_date", "security_type_desc", "security_class_desc", "debt_held_public_mil_amt", "intragov_hold_mil_amt", "total_mil_amt", "record_calendar_year"))),
+    conditionalPanel(
+      "input.var == 'Bond Issues'",
+      checkboxGroupInput("BIColumns", "Select desired columns", choices =
+                           c("record_date", "series_cd", "series_desc", "bonds_issued_cnt", "bonds_redeemed_cnt", "bonds_out_cnt", "bonds_matured_cnt", "bonds_unmatured_cnt", "record_calendar_year"),
+                         selected = c("record_date", "series_cd", "series_desc", "bonds_issued_cnt", "bonds_redeemed_cnt", "bonds_out_cnt", "bonds_matured_cnt", "bonds_unmatured_cnt", "record_calendar_year"))),
       numericInput("round", "Select the number of digits for rounding", value = 2, min = 0, max = 5)
     ),
     
