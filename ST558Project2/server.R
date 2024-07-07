@@ -105,9 +105,31 @@ shinyServer(function(input, output) {
   output$contingencyTable <- renderTable({
     url <- "https://api.fiscaldata.treasury.gov/services/api/fiscal_service/v2/accounting/od/gold_reserve"
     final_data_GR <- API_Cleaning(url)
-    selected_data <- final_data_GR |>
+    selected_categorical_data <- final_data_GR |>
       select(all_of(input$CategoricalSummaries))
-    table(selected_data)
+    table(selected_categorical_data)
+  })
+  output$NumericalSummaries <- renderTable({
+    url <- "https://api.fiscaldata.treasury.gov/services/api/fiscal_service/v2/accounting/od/gold_reserve"
+    final_data_GR <- API_Cleaning(url)
+    final_data_GR$fine_troy_ounce_qty <- as.numeric(final_data_GR$fine_troy_ounce_qty)
+    final_data_GR$book_value_amt <- as.numeric(final_data_GR$book_value_amt)
+    selected_numerical_data <- final_data_GR %>%
+      select(all_of(input$NumericalSummaries))
+    
+    if (input$NumericalSummaryType == "mean") {
+      summary_value <- list("Mean" = mean(selected_numerical_data[[1]]))
+    } else if (input$NumericalSummaryType == "median") {
+      summary_value <- list("Median" = median(selected_numerical_data[[1]]))
+    } else if (input$NumericalSummaryType == "sd") {
+      summary_value <- list("SD" = sd(selected_numerical_data[[1]]))
+    } else if (input$NumericalSummaryType == "max") {
+      summary_value <- list("Max" = max(selected_numerical_data[[1]]))
+    } else if (input$NumericalSummaryType == "min") {
+      summary_value <- list("Min" = min(selected_numerical_data[[1]]))
+    }
+
+    summary_value
   })
   output$barPlot <- renderPlot({
 })

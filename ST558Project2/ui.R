@@ -47,9 +47,9 @@ shinyUI(fluidPage(
         "input.var == 'Gold Reserve'",
         radioButtons("GRFilter", "Filter By Year", choices = c("2012","2013", "both"), selected = "both"),
         checkboxGroupInput("GRColumns", "Select desired columns", choices = 
-                            c("Record Date" = "record_date","Facility" = "facility_desc","Form of Gold" = "form_desc","Location" = "location_desc", 
+                            list("Record Date" = "record_date","Facility" = "facility_desc","Form of Gold" = "form_desc","Location" = "location_desc", 
                               "Gold Quantity (Ounces)" = "fine_troy_ounce_qty","Book Value" = "book_value_amt"), 
-                            selected = c("record_date", "facility_desc", "form_desc", "location_desc", "fine_troy_ounce_qty", "book_value_amt"))),
+                            selected = list("record_date", "facility_desc", "form_desc", "location_desc", "fine_troy_ounce_qty", "book_value_amt"))),
     
       conditionalPanel(
         "input.var == 'Balance Sheets'",
@@ -98,14 +98,35 @@ shinyUI(fluidPage(
   )
   ),
   tabPanel("Data Exploration",
-           sidebarLayout(sidebarPanel(
-      checkboxGroupInput("CategoricalSummaries", "Select variables to make a contigency table for.",
-                         choices = list("Facility" = "facility_desc", 
-                                        "Form of Gold" = "form_desc", "Location" = "location_desc"),
-                         selected = list("Facility" = "facility_desc"))
-           ),
-      mainPanel(tableOutput("contingencyTable"))
-           )
+           h3("Exploring the Gold Reserves Dataset"),
+           p("This is the full dataset from the Gold Reserves of the US Treasury. This tab allows the 
+             user to make contigency tables using the 3 categorical variables from the data set. It
+             also allows the user to select numerical summaries and numerical variables to summarize.
+             Lastly, it allows the user to select a certain graphical display."),
+      sidebarLayout(sidebarPanel(
+      selectInput("Summary", label = "Select which summary you would like.", 
+                  choices = c("Contingency Tables", "Numerical Summaries", "Graphs")),
+      conditionalPanel(
+        "input.Summary == 'Contingency Tables'",
+        checkboxGroupInput("CategoricalSummaries", "Select variables to make a contigency table for.",
+                           choices = list("Facility" = "facility_desc", 
+                                          "Form of Gold" = "form_desc", "Location" = "location_desc"),
+                           selected = list("facility_desc"))),
+      conditionalPanel(
+        "input.Summary == 'Numerical Summaries'",
+        radioButtons("NumericalSummaries", "Select variable to summarize statistics for.", 
+                           choices = c("Gold Quantity (Ounces)" = "fine_troy_ounce_qty","Book Value" = "book_value_amt"),
+                           selected = "book_value_amt"),
+        radioButtons("NumericalSummaryType", "Select which numerical summary you would like.", 
+                     choices = c("mean", "median", "sd", "max", "min"), 
+                     selected = "mean"))
+        
+      ),
+      mainPanel(conditionalPanel("input.Summary == 'Contingency Tables'",
+                                 tableOutput("contingencyTable")),
+                conditionalPanel("input.Summary == 'Numerical Summaries'",
+                                 tableOutput("NumericalSummaries"))
+           ))
       
   )
   )
