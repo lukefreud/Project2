@@ -170,6 +170,25 @@ shinyServer(function(input, output) {
   })
   
   output$scatterPlot <- renderPlot({
+    url <- "https://api.fiscaldata.treasury.gov/services/api/fiscal_service/v1/accounting/od/savings_bonds_report"
+    final_data_BI <- API_Cleaning(url)
+    # Assuming the data is cleaned and stored in final_data_Bonds
+    # Convert necessary columns to numeric
+    final_data_BI <- final_data_BI |>
+      mutate(bonds_issued_cnt = as.numeric(bonds_issued_cnt),
+             bonds_out_cnt = as.numeric(bonds_out_cnt)) |> 
+      filter(!(series_cd %in% c("null", "E", "EE", "HH", "I", "SN")))
+    
+    # Create scatter plot
+    ggplot(final_data_BI, aes(x = bonds_issued_cnt, y = bonds_out_cnt, color = series_desc)) +
+      geom_point() +
+      labs(title = "Scatterplot of Total Bonds Issued vs. Bonds Outstanding Colored by Series",
+           x = "Total Bonds Issued",
+           y = "Bonds Outstanding",
+           color = "Series Description") +
+      theme_minimal() +
+      scale_x_continuous(labels = scales::comma) + # Format x-axis labels
+      scale_y_continuous(labels = scales::comma)   # Format y-axis labels
     
   })
 })
