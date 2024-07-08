@@ -119,15 +119,34 @@ shinyUI(fluidPage(
                            selected = "book_value_amt"),
         radioButtons("NumericalSummaryType", "Select which numerical summary you would like.", 
                      choices = c("mean", "median", "sd", "max", "min"), 
-                     selected = "mean"))
+                     selected = "mean")),
+      conditionalPanel("input.Summary == 'Graphs'",
+                           selectInput("plotType", "Select Plot Type",
+                                       choices = list("Bar Graph" = "bar", 
+                                                      "Line Graph" = "line", 
+                                                      "Box Plot" = "box", 
+                                                      "Scatter Plot" = "scatter"))
+                         )
         
       ),
       mainPanel(conditionalPanel("input.Summary == 'Contingency Tables'",
                                  tableOutput("contingencyTable")),
                 conditionalPanel("input.Summary == 'Numerical Summaries'",
-                                 tableOutput("NumericalSummaries"))
+                tableOutput("NumericalSummaries")),
+                conditionalPanel("input.Summary == 'Graphs'",
+                conditionalPanel("input.plotType == 'bar'",
+                                  plotOutput("barPlot")
+                                     ),
+                conditionalPanel("input.plotType == 'line'",
+                                  plotOutput("linePlot")
+                                     ),
+                conditionalPanel("input.plotType == 'box'",
+                                  plotOutput("boxPlot")
+                                     ),
+                conditionalPanel("input.plotType == 'scatter'",
+                                  plotOutput("scatterPlot")
+                                     )
+                                   )
            ))
-      
-  )
-  )
+  ))
 ))

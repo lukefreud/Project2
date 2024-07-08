@@ -52,7 +52,7 @@ shinyServer(function(input, output) {
         final_data_BS <- final_data |>
           filter(record_calendar_year == "1997")
       }
-      return(final_data)
+      return(final_data_BS)
     } else if (input$var == "Interest Rates") {
       url <- "https://api.fiscaldata.treasury.gov/services/api/fiscal_service/v2/accounting/od/avg_interest_rates"
       final_data <- API_Cleaning(url)
@@ -132,5 +132,44 @@ shinyServer(function(input, output) {
     summary_value
   })
   output$barPlot <- renderPlot({
-})
+    url <- "https://api.fiscaldata.treasury.gov/services/api/fiscal_service/v2/accounting/od/gold_reserve"
+    final_data_GR <- API_Cleaning(url)
+    
+    final_data_GR |>
+      group_by(location_desc) |>
+      summarize(total_book_value = sum(as.numeric(book_value_amt))) |>
+      ggplot(aes(x = location_desc, y = total_book_value, fill = location_desc)) +
+      geom_bar(stat = "identity") +
+      labs(title = "Total Gold Reserve Book Value by Location",
+           x = "Location",
+           y = "Total Book Value (USD)") +
+      theme_minimal() +
+      theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 10)) +
+      scale_y_continuous(labels = scales::comma)
+  })
+  
+  output$linePlot <- renderPlot({
+    url <- "https://api.fiscaldata.treasury.gov/services/api/fiscal_service/v2/accounting/od/avg_interest_rates"
+    final_data_IR <- API_Cleaning(url)
+    
+    final_data_IR %>%
+      mutate(record_date = as.Date(record_date),
+             avg_interest_rate_amt = as.numeric(avg_interest_rate_amt)/100) %>%
+      filter(security_desc == "Treasury Bonds") %>%
+      group_by(record_date) %>%
+      ggplot(aes(x = record_date, y = avg_interest_rate_amt)) +
+      geom_line(color = "blue") +
+      labs(title = "Trend of Interest Rates of Treasury Bonds in 2001 Throughout Months",
+           x = "Month",
+           y = "Interest Rate of Treasury Bonds") +
+      theme_classic() +
+      scale_y_continuous(labels = scales::percent)
+  })
+  
+  output$boxPlot <- renderPlot({
+  })
+  
+  output$scatterPlot <- renderPlot({
+    
+  })
 })
