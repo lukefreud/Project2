@@ -2,6 +2,7 @@ library(shiny)
 library(caret)
 library(tidyverse)
 library(DT)
+library(ggbeeswarm)
 
 shinyServer(function(input, output) {
   # Function to clean each URL
@@ -142,7 +143,8 @@ shinyServer(function(input, output) {
       geom_bar(stat = "identity") +
       labs(title = "Total Gold Reserve Book Value by Location",
            x = "Location",
-           y = "Total Book Value (USD)") +
+           y = "Total Book Value (USD)",
+           fill = "Location") +
       theme_minimal() +
       theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 10)) +
       scale_y_continuous(labels = scales::comma)
@@ -166,14 +168,27 @@ shinyServer(function(input, output) {
       scale_y_continuous(labels = scales::percent)
   })
   
-  output$boxPlot <- renderPlot({
+  output$swarmPlot <- renderPlot({
+    url <- "https://api.fiscaldata.treasury.gov/services/api/fiscal_service/v1/accounting/od/savings_bonds_report"
+    final_data_BI <- API_Cleaning(url)
+    final_data_BI <- final_data_BI |>
+      mutate(bonds_issued_cnt = as.numeric(bonds_issued_cnt),
+             bonds_redeemed_cnt = as.numeric(bonds_redeemed_cnt)) |>
+      filter(!(series_cd == ("null")))
+    ggplot(final_data_BI, aes(x = series_desc, y = bonds_issued_cnt, color = series_desc)) +
+      geom_beeswarm() +
+      labs(title = "Number of Bonds Issued for Each Bond",
+           x = "Type of Bond Issued",
+           y = "Bonds Issued",
+           color = "Type of Bond") +
+      theme_minimal() +
+      theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 12)) +
+      scale_y_continuous(labels = scales::comma)
   })
   
   output$scatterPlot <- renderPlot({
     url <- "https://api.fiscaldata.treasury.gov/services/api/fiscal_service/v1/accounting/od/savings_bonds_report"
     final_data_BI <- API_Cleaning(url)
-    # Assuming the data is cleaned and stored in final_data_Bonds
-    # Convert necessary columns to numeric
     final_data_BI <- final_data_BI |>
       mutate(bonds_issued_cnt = as.numeric(bonds_issued_cnt),
              bonds_out_cnt = as.numeric(bonds_out_cnt)) |> 
@@ -182,10 +197,10 @@ shinyServer(function(input, output) {
     # Create scatter plot
     ggplot(final_data_BI, aes(x = bonds_issued_cnt, y = bonds_out_cnt, color = series_desc)) +
       geom_point() +
-      labs(title = "Scatterplot of Total Bonds Issued vs. Bonds Outstanding Colored by Series",
+      labs(title = "Total Bonds Issued vs. Bonds Outstanding Colored by Type",
            x = "Total Bonds Issued",
            y = "Bonds Outstanding",
-           color = "Series Description") +
+           color = "Type of Bond") +
       theme_minimal() +
       scale_x_continuous(labels = scales::comma) + # Format x-axis labels
       scale_y_continuous(labels = scales::comma)   # Format y-axis labels

@@ -3,6 +3,7 @@ library(DT)
 library(caret)
 library(httr)
 library(dplyr)
+library(ggbeeswarm)
 
 
 # Define UI for application that draws a histogram
@@ -124,7 +125,7 @@ shinyUI(fluidPage(
                            selectInput("plotType", "Select Plot Type",
                                        choices = list("Bar Graph" = "bar", 
                                                       "Line Graph" = "line", 
-                                                      "Box Plot" = "box", 
+                                                      "Swarm Plot" = "swarm", 
                                                       "Scatter Plot" = "scatter"))
                          )
         
@@ -140,8 +141,8 @@ shinyUI(fluidPage(
                 conditionalPanel("input.plotType == 'line'",
                                   plotOutput("linePlot")
                                      ),
-                conditionalPanel("input.plotType == 'box'",
-                                  plotOutput("boxPlot")
+                conditionalPanel("input.plotType == 'swarm'",
+                                  plotOutput("swarmPlot")
                                      ),
                 conditionalPanel("input.plotType == 'scatter'",
                                   plotOutput("scatterPlot")
