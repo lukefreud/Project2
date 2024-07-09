@@ -1,9 +1,10 @@
 # Loading required packages
 library(shiny)
 library(jsonlite)
-library(caret)
-library(tidyverse)
 library(DT)
+library(caret)
+library(httr)
+library(tidyverse)
 library(ggbeeswarm)
 
 # Creating the shiny server

@@ -1,9 +1,10 @@
+# Installing required packages
 library(shiny)
 library(jsonlite)
 library(DT)
 library(caret)
 library(httr)
-library(dplyr)
+library(tidyverse)
 library(ggbeeswarm)
 
 
