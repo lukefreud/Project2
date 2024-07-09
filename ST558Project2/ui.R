@@ -1,4 +1,5 @@
 library(shiny)
+library(jsonlite)
 library(DT)
 library(caret)
 library(httr)
@@ -35,15 +36,21 @@ shinyUI(fluidPage(
            ),
            sidebarPanel(tags$img(src = 'us-treasury.png', align = "center", width = "265px", length = "265px"))
            ),
+  
+  
   # Data Download tab panel
   tabPanel("Data Download",
     sidebarLayout(
     sidebarPanel(
       h3("This data set comes from the API of US Treasury data."),
       br(),
+      
+      #Allowing user to select which data set they want out of 6 endpoints
       selectInput("var", label = "Dataset to choose", 
                   choices = c("Gold Reserve", "Balance Sheets", "Interest Rates", "Electronic Securities", "Public Debt", "Bond Issues"),
                   selected = "Gold Reserve"),
+      
+      # Conditional panel for when user selects Gold Reserve data set
       conditionalPanel(
         "input.var == 'Gold Reserve'",
         radioButtons("GRFilter", "Filter By Year", choices = c("2012","2013", "both"), selected = "both"),
@@ -51,7 +58,8 @@ shinyUI(fluidPage(
                             list("Record Date" = "record_date","Facility" = "facility_desc","Form of Gold" = "form_desc","Location" = "location_desc", 
                               "Gold Quantity (Ounces)" = "fine_troy_ounce_qty","Book Value" = "book_value_amt"), 
                             selected = list("record_date", "facility_desc", "form_desc", "location_desc", "fine_troy_ounce_qty", "book_value_amt"))),
-    
+      
+      # Conditional panel for when user selects Balance Sheet data set
       conditionalPanel(
         "input.var == 'Balance Sheets'",
         radioButtons("BSFilter", "Filter By Year", choices = c("1995", "1996", "1997", "all"), selected = "all"),
@@ -60,6 +68,8 @@ shinyUI(fluidPage(
                               "Line Item" = "line_item_desc","Bill Amount" = "position_bil_amt"),
                            selected = list("Record Date" = "record_date","Restatement Variable" = "restmt_flag","Account" = "account_desc", 
                                            "Line Item" = "line_item_desc","Bill Amount" = "position_bil_amt"))),
+      
+      # Conditional panel for when user selects Interest Rates data set
       conditionalPanel(
         "input.var == 'Interest Rates'",
         checkboxGroupInput("IRColumns", "Select desired columns", choices =
@@ -67,6 +77,8 @@ shinyUI(fluidPage(
                                   "Average Interest Rate" = "avg_interest_rate_amt"),
                            selected = list("Record Date" = "record_date","Security Type" = "security_type_desc","Specific Security" = "security_desc", 
                                            "Average Interest Rate" = "avg_interest_rate_amt"))),
+      
+      # Conditional panel for when user selects Electronic Securities data set
       conditionalPanel(
         "input.var == 'Electronic Securities'",
         radioButtons("ESFilter", "Filter By Year", choices = c("2002", "2003", "both"), selected = "both"),
@@ -75,6 +87,8 @@ shinyUI(fluidPage(
                                   "Securities Redeemed" = "securities_redeemed_cnt","Value of Securities Redeemed" = "securities_redeemed_amt"), 
                            selected = list("Record Date" = "record_date","Security Type" = "security_type_desc", "Security Class" = "security_class_desc", 
                                            "Securities Redeemed" = "securities_redeemed_cnt","Value of Securities Redeemed" = "securities_redeemed_amt"))),
+      
+      # Conditional panel for when user selects Public Debt data set
     conditionalPanel(
       "input.var == 'Public Debt'",
       checkboxGroupInput("PDColumns", "Select desired columns", choices =
@@ -82,6 +96,8 @@ shinyUI(fluidPage(
                              "Intra-Government Debt Held (in Millions)" = "intragov_hold_mil_amt","Total Debt Held (in Millions)" = "total_mil_amt"),
                          selected = list("Record Date" = "record_date","Security Type" = "security_type_desc","Security Class" = "security_class_desc","Public Debt Held (in Millions)" = "debt_held_public_mil_amt",
                                          "Intra-Government Debt Held (in Millions)" = "intragov_hold_mil_amt","Total Debt Held (in Millions)" = "total_mil_amt"))),
+    
+    # Conditional panel for when user selects Bond Issues data set
     conditionalPanel(
       "input.var == 'Bond Issues'",
       checkboxGroupInput("BIColumns", "Select desired columns", choices =
@@ -89,39 +105,73 @@ shinyUI(fluidPage(
                               "Bonds Redeemed" =  "bonds_redeemed_cnt","Bonds Outstanding" = "bonds_out_cnt", "Bonds Matured" = "bonds_matured_cnt", "Bonds Unmatured" = "bonds_unmatured_cnt"),
                          selected = list("Record Date" = "record_date","CD Series" = "series_cd", "Overall Series" = "series_desc", "Bonds Issued" = "bonds_issued_cnt",
                                          "Bonds Redeemed" =  "bonds_redeemed_cnt","Bonds Outstanding" = "bonds_out_cnt", "Bonds Matured" = "bonds_matured_cnt", "Bonds Unmatured" = "bonds_unmatured_cnt"))),
+    
+    # Adding a download button so the user can download the data as a csv file
     downloadButton("downloadData", "Download CSV")
     ),
     
-    # Show a plot of the generated distribution
+    # Outputting the subsetted data table to the main panel
     mainPanel(
       dataTableOutput("summary")
     )
   )
   ),
+  
+  
+  # Data Exploration tab
   tabPanel("Data Exploration",
+           # Explaining the purpose of this tab
            h3("Exploring the Gold Reserves Dataset"),
            p("This is the full dataset from the Gold Reserves of the US Treasury. This tab allows the 
-             user to make contigency tables using the 3 categorical variables from the data set. It
-             also allows the user to select numerical summaries and numerical variables to summarize.
-             Lastly, it allows the user to select a certain graphical display."),
+             user to choose between making contingency tables, numerical summaries, and plots of certain
+             Treasury Data."),
+           # Explaining the contingency tables to user
+           h3("Contingency Tables Info"),
+           p("For the contingency tables, the data being tabulated is from the Gold Reserves
+             data set. Selecting each variable or multiple variables will give a table of the count of 
+             measurements in the data set taken from each location, which facility the location is in, and
+             the count of gold coins vs. gold bullions.") ,
+           # Explaining the numerical summaries to user
+           h3("Numerical Summaries Info"),
+           p("For the numerical summaries, the summaries are of variables
+             within the Bonds Issued data set. The user can select which type of bond they want summarized, along
+             with which statistic they would like. The statistic will be reported for 5 variables within the 
+             Bonds Issued data set: Bonds Issued, Bonds Redeemed, Bonds Outstanding, Bonds Matured, Bonds 
+             Unmatured."),
+           # Explaining information about the graphs
+            h3("Graphs Info"),
+            p("Lastly, the graphs panel allows the user to select from 4 different graphs.
+             These graphs use different data sets within the US Treasury API that can be accessed in
+             the Data Download Panel."),
+           
       sidebarLayout(sidebarPanel(
+        # Allowing user to select whether they would like contingency tables, numerical summaries,
+        # or graphs to be displayed
       selectInput("Summary", label = "Select which summary you would like.", 
                   choices = c("Contingency Tables", "Numerical Summaries", "Graphs")),
+      # Conditional panel for the user selecting contingency table panel
       conditionalPanel(
         "input.Summary == 'Contingency Tables'",
+        # Allowing user to select variables to make contingency tables of
         checkboxGroupInput("CategoricalSummaries", "Select variables to make a contigency table for.",
                            choices = list("Facility" = "facility_desc", 
                                           "Form of Gold" = "form_desc", "Location" = "location_desc"),
                            selected = list("facility_desc"))),
+      
+      # Conditional panel for the user selecting numerical summaries panel
       conditionalPanel(
         "input.Summary == 'Numerical Summaries'",
+        # Allowing user to select bond type to get statistics for between 4 options
         radioButtons("BondType", "Select type of bond to summarize statistics for.", 
                            choiceNames = c("Series E", "Series EE", "Series F", "Series G"),
                           choiceValues = c("E", "EE", "F", "G"),
                            selected = "E"),
+        # Allowing user to select which numerical summary they want for the bond type specified
         radioButtons("NumericalSummaryType", "Select which numerical summary you would like.", 
                      choices = c("mean", "median", "sd", "max", "min"), 
                      selected = "mean")),
+      
+      # Conditional panel for the user selecting graphs panel
       conditionalPanel("input.Summary == 'Graphs'",
                            selectInput("plotType", "Select Plot Type",
                                        choices = list("Bar Graph" = "bar", 
@@ -131,12 +181,18 @@ shinyUI(fluidPage(
                          )
         
       ),
+      
+      # Main panel that displays the tables or graphs the user selected
       mainPanel(conditionalPanel("input.Summary == 'Contingency Tables'",
                                  tableOutput("contingencyTable")),
                 conditionalPanel("input.Summary == 'Numerical Summaries'",
                 tableOutput("NumericalSummaries")),
                 conditionalPanel("input.Summary == 'Graphs'",
                 conditionalPanel("input.plotType == 'bar'",
+                                 # Allowing the user to select whether they want faceting
+                                 selectInput("FacetWrap", "Do you want to facet wrap this plot?",
+                                             choices = c("Yes", "No"),
+                                             selected = "No"),
                                   plotOutput("barPlot")
                                      ),
                 conditionalPanel("input.plotType == 'line'",
