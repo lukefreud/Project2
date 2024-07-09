@@ -115,9 +115,10 @@ shinyUI(fluidPage(
                            selected = list("facility_desc"))),
       conditionalPanel(
         "input.Summary == 'Numerical Summaries'",
-        radioButtons("NumericalSummaries", "Select variable to summarize statistics for.", 
-                           choices = c("Gold Quantity (Ounces)" = "fine_troy_ounce_qty","Book Value" = "book_value_amt"),
-                           selected = "book_value_amt"),
+        radioButtons("BondType", "Select type of bond to summarize statistics for.", 
+                           choiceNames = c("Series E", "Series EE", "Series F", "Series G"),
+                          choiceValues = c("E", "EE", "F", "G"),
+                           selected = "E"),
         radioButtons("NumericalSummaryType", "Select which numerical summary you would like.", 
                      choices = c("mean", "median", "sd", "max", "min"), 
                      selected = "mean")),
